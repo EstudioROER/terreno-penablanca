@@ -6,7 +6,7 @@
 // ── CONFIGURACIÓN ─────────────────────────────────────────────
 // Reemplaza este ID con el que obtengas en formspree.io
 // Formato: https://formspree.io/f/XXXXXXXX
-const FORMSPREE_ENDPOINT = 'https://formspree.io/f/XXXXXXXX';
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xpqvedag';
 
 // ── Navbar scroll effect ──────────────────────────────────────
 const navbar = document.getElementById('navbar');
