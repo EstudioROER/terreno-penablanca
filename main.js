@@ -4,9 +4,8 @@
    ============================================================ */
 
 // ── CONFIGURACIÓN ─────────────────────────────────────────────
-// Reemplaza este ID con el que obtengas en formspree.io
-// Formato: https://formspree.io/f/XXXXXXXX
-const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xpqvedag';
+// Integrado directamente con Web3Forms a través de index.html (access_key)
+
 
 // ── Navbar scroll effect ──────────────────────────────────────
 const navbar = document.getElementById('navbar');
@@ -86,7 +85,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// ── Formulario Formspree (AJAX) ───────────────────────────────
+// ── Web3Forms API (AJAX) ───────────────────────────────────────
 const form     = document.getElementById('contactoForm');
 const success  = document.getElementById('formSuccess');
 const btnEnviar = document.getElementById('btnEnviar');
@@ -125,35 +124,32 @@ if (form) {
     btnEnviar.innerHTML = '<span>Enviando</span><span class="sending-spinner">⏳</span>';
 
     try {
-      // ── Verificar si el endpoint está configurado ──
-      if (FORMSPREE_ENDPOINT.includes('XXXXXXXX')) {
-        // Modo demo: simular envío exitoso
-        await new Promise(r => setTimeout(r, 1200));
-        showSuccess();
-        return;
-      }
+      const formData = new FormData(form);
+      const object = Object.fromEntries(formData);
+      const json = JSON.stringify(object);
 
-      // ── Envío real a Formspree ──
-      const data = new FormData(form);
-      const response = await fetch(FORMSPREE_ENDPOINT, {
+      const response = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
-        body: data,
-        headers: { 'Accept': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: json
       });
 
-      if (response.ok) {
+      const resData = await response.json();
+
+      if (response.status === 200 || resData.success) {
         showSuccess();
       } else {
-        const json = await response.json();
-        const errorMsg = json?.errors?.map(e => e.message).join(', ') || 'Error al enviar. Intenta de nuevo.';
-        throw new Error(errorMsg);
+        throw new Error(resData.message || 'Error al enviar el formulario.');
       }
 
     } catch (err) {
-      console.error('Error Formspree:', err);
+      console.error('Error Web3Forms:', err);
       btnEnviar.disabled = false;
       btnEnviar.innerHTML = originalHTML;
-      // Mostrar error inline
+      
       let errEl = form.querySelector('.form-error-msg');
       if (!errEl) {
         errEl = document.createElement('p');
