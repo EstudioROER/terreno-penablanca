@@ -125,21 +125,19 @@ if (form) {
 
     try {
       const formData = new FormData(form);
-      const object = Object.fromEntries(formData);
-      const json = JSON.stringify(object);
-
+      
+      // Enviamos el FormData directamente, que es el formato estándar que soporta Web3Forms
       const response = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
+        body: formData,
         headers: {
-          'Content-Type': 'application/json',
           'Accept': 'application/json'
-        },
-        body: json
+        }
       });
 
       const resData = await response.json();
 
-      if (response.status === 200 || resData.success) {
+      if (response.ok && resData.success) {
         showSuccess();
       } else {
         throw new Error(resData.message || 'Error al enviar el formulario.');
