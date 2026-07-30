@@ -58,22 +58,22 @@ const fadeObserver = new IntersectionObserver((entries) => {
   });
 });
 
-// ── UF Counter animation ──────────────────────────────────────
+// ── CLP Counter animation ──────────────────────────────────────
 function animateCounter(el, target, duration = 1600) {
   const startTime = performance.now();
   function update(now) {
     const progress = Math.min((now - startTime) / duration, 1);
     const eased = 1 - Math.pow(1 - progress, 4);
-    el.textContent = 'UF ' + Math.floor(eased * target).toLocaleString('es-CL');
+    el.textContent = '$' + Math.floor(eased * target).toLocaleString('es-CL') + ' CLP';
     if (progress < 1) requestAnimationFrame(update);
-    else el.textContent = 'UF ' + target.toLocaleString('es-CL');
+    else el.textContent = '$' + target.toLocaleString('es-CL') + ' CLP';
   }
   requestAnimationFrame(update);
 }
 const priceUfEl = document.querySelector('.price-uf');
 if (priceUfEl) {
   new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting) { animateCounter(priceUfEl, 48098); entries[0].target._obs?.disconnect(); }
+    if (entries[0].isIntersecting) { animateCounter(priceUfEl, 800000000); entries[0].target._obs?.disconnect(); }
   }, { threshold: 0.5 }).observe(priceUfEl);
 }
 
