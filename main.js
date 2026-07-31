@@ -76,4 +76,58 @@ if (priceUfEl) {
   }, { threshold: 0.5 }).observe(priceUfEl);
 }
 
+// ── Web3Forms AJAX con Feedback Inmediato ─────────────────────
+const form = document.getElementById('contactoForm');
+const successCard = document.getElementById('formSuccess');
+const btnEnviar = document.getElementById('btnEnviar');
+
+if (form && successCard && btnEnviar) {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Deshabilitar botón y mostrar carga
+    const originalHTML = btnEnviar.innerHTML;
+    btnEnviar.disabled = true;
+    btnEnviar.innerHTML = '<span>Enviando...</span> <span class="spinner">⏳</span>';
+
+    try {
+      const formData = new FormData(form);
+
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      const resData = await response.json();
+
+      if (response.ok && resData.success) {
+        // Ocultar formulario y mostrar mensaje de éxito local de inmediato
+        form.classList.add('hidden');
+        successCard.classList.remove('hidden');
+        successCard.classList.add('fade-in', 'visible');
+        successCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        throw new Error(resData.message || 'Error en la respuesta del servidor.');
+      }
+    } catch (err) {
+      console.error('Error al enviar:', err);
+      btnEnviar.disabled = false;
+      btnEnviar.innerHTML = originalHTML;
+
+      // Mostrar error inline abajo del formulario
+      let errEl = form.querySelector('.form-error-msg');
+      if (!errEl) {
+        errEl = document.createElement('p');
+        errEl.className = 'form-error-msg';
+        errEl.style.cssText = 'color:#e05c5c;font-size:0.85rem;text-align:center;margin-top:10px';
+        form.appendChild(errEl);
+      }
+      errEl.textContent = '⚠️ Ocurrió un error. Por favor verifica tu conexión o inténtalo más tarde.';
+    }
+  });
+}
+
 console.log('🏛 Parde Arquitectos – Terreno Peñablanca listing loaded.');
