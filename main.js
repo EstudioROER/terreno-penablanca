@@ -4,8 +4,9 @@
    ============================================================ */
 
 // ── CONFIGURACIÓN ─────────────────────────────────────────────
-// Integrado directamente con Web3Forms a través de index.html (access_key)
-
+// Reemplaza este ID con el que obtengas en formspree.io
+// Formato: https://formspree.io/f/XXXXXXXX
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xpqvedag';
 
 // ── Navbar scroll effect ──────────────────────────────────────
 const navbar = document.getElementById('navbar');
@@ -57,22 +58,22 @@ const fadeObserver = new IntersectionObserver((entries) => {
   });
 });
 
-// ── CLP Counter animation ──────────────────────────────────────
+// ── UF Counter animation ──────────────────────────────────────
 function animateCounter(el, target, duration = 1600) {
   const startTime = performance.now();
   function update(now) {
     const progress = Math.min((now - startTime) / duration, 1);
     const eased = 1 - Math.pow(1 - progress, 4);
-    el.textContent = '$' + Math.floor(eased * target).toLocaleString('es-CL') + ' CLP';
+    el.textContent = 'UF ' + Math.floor(eased * target).toLocaleString('es-CL');
     if (progress < 1) requestAnimationFrame(update);
-    else el.textContent = '$' + target.toLocaleString('es-CL') + ' CLP';
+    else el.textContent = 'UF ' + target.toLocaleString('es-CL');
   }
   requestAnimationFrame(update);
 }
 const priceUfEl = document.querySelector('.price-uf');
 if (priceUfEl) {
   new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting) { animateCounter(priceUfEl, 800000000); entries[0].target._obs?.disconnect(); }
+    if (entries[0].isIntersecting) { animateCounter(priceUfEl, 48098); entries[0].target._obs?.disconnect(); }
   }, { threshold: 0.5 }).observe(priceUfEl);
 }
 
@@ -85,7 +86,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// ── Web3Forms API (AJAX) ───────────────────────────────────────
+// ── Formulario Formspree (AJAX) ───────────────────────────────
 const form     = document.getElementById('contactoForm');
 const success  = document.getElementById('formSuccess');
 const btnEnviar = document.getElementById('btnEnviar');
@@ -124,30 +125,35 @@ if (form) {
     btnEnviar.innerHTML = '<span>Enviando</span><span class="sending-spinner">⏳</span>';
 
     try {
-      const formData = new FormData(form);
-      
-      // Enviamos el FormData directamente, que es el formato estándar que soporta Web3Forms
-      const response = await fetch('https://api.web3forms.com/submit', {
+      // ── Verificar si el endpoint está configurado ──
+      if (FORMSPREE_ENDPOINT.includes('XXXXXXXX')) {
+        // Modo demo: simular envío exitoso
+        await new Promise(r => setTimeout(r, 1200));
+        showSuccess();
+        return;
+      }
+
+      // ── Envío real a Formspree ──
+      const data = new FormData(form);
+      const response = await fetch(FORMSPREE_ENDPOINT, {
         method: 'POST',
-        body: formData,
-        headers: {
-          'Accept': 'application/json'
-        }
+        body: data,
+        headers: { 'Accept': 'application/json' }
       });
 
-      const resData = await response.json();
-
-      if (response.ok && resData.success) {
+      if (response.ok) {
         showSuccess();
       } else {
-        throw new Error(resData.message || 'Error al enviar el formulario.');
+        const json = await response.json();
+        const errorMsg = json?.errors?.map(e => e.message).join(', ') || 'Error al enviar. Intenta de nuevo.';
+        throw new Error(errorMsg);
       }
 
     } catch (err) {
-      console.error('Error Web3Forms:', err);
+      console.error('Error Formspree:', err);
       btnEnviar.disabled = false;
       btnEnviar.innerHTML = originalHTML;
-      
+      // Mostrar error inline
       let errEl = form.querySelector('.form-error-msg');
       if (!errEl) {
         errEl = document.createElement('p');
